@@ -5,6 +5,5 @@
 .vscode
 
 # System folders
-user_content/profile_pictures/*
-user_content/tmp/*
+user_content/*/*
 engine/failure_logs/*.log
