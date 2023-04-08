@@ -18,14 +18,17 @@ class BrowserPDO extends GlobalPDO
     }
 
     public function insert_commit(string $user_uuid) {
+        $stmt = $this->pdo->query("SELECT UUID() as uuid");
+        $uuid = $stmt->fetch(PDO::FETCH_ASSOC)["uuid"];
+
         $stmt = $this->pdo->prepare(
-            "INSERT INTO browser_commits(uuid, user_uuid, saved_on) VALUES(UUID(), :user_uuid, NOW())"
+            "INSERT INTO browser_commits(uuid, user_uuid, saved_on) VALUES('$uuid', :user_uuid, NOW())"
         );
         $stmt->bindValue("user_uuid", $user_uuid);
 
         $executed = $stmt->execute();
 
         if (!$executed) throw new Exception($this->pdo->errorCode());
-        return $this->pdo->lastInsertId("uuid");
+        return $uuid;
     }
 }

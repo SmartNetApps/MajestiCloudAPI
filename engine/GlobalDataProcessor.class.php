@@ -23,11 +23,13 @@ class GlobalDataProcessor
 
     public function read_file(string $file_uuid)
     {
+        if(!is_file($this->path_to($file_uuid))) return null;
         return file_get_contents($this->path_to($file_uuid));
     }
 
     public function read_json(string $file_uuid)
     {
+        if(!is_file($this->path_to($file_uuid))) return null;
         return json_decode($this->read_file($file_uuid));
     }
 

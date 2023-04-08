@@ -29,5 +29,6 @@ class BrowserEngine extends GlobalEngine
     public function save_new_commit(string $raw_commit_data) {
         $commit_uuid = $this->pdo->insert_commit($this->current_session()["user_uuid"]);
         $this->dataprocessor->save_commit($commit_uuid, $raw_commit_data);
+        return $commit_uuid;
     }
 }

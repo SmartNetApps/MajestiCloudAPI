@@ -11,7 +11,8 @@ class BrowserDataProcessor extends GlobalDataProcessor
     function read_commits(array $uuids) {
         $commits = [];
         foreach ($uuids as $uuid) {
-            $commits[] = $this->read_json($uuid);
+            $commit = $this->read_json($uuid);
+            if(!empty($commit)) $commits[] = $this->read_json($uuid);
         }
         return $commits;
     }
