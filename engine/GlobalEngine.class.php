@@ -36,6 +36,7 @@ class GlobalEngine
         $this->environment = new Environment();
 
         set_exception_handler(array($this, 'handle_exception'));
+        set_error_handler(array($this, 'handle_error'));
 
         // PDO initialization
         $this->pdo = new GlobalPDO($this->environment);
@@ -288,5 +289,9 @@ class GlobalEngine
         }
 
         $this->echo_response($response, 500);
+    }
+
+    public function handle_error($errno, $errstr, $errfile, $errline) {
+        throw new ErrorException($errstr, $errno, 0, $errfile, $errline);
     }
 }
