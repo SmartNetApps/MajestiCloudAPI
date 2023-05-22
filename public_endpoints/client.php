@@ -1,11 +1,12 @@
 <?php
 
 require_once(__DIR__ . "/../engine/client/ClientEngine.class.php");
-$engine = new ClientEngine(true);
 
 switch ($_SERVER["REQUEST_METHOD"]) {
     case "GET":
         if (!empty($_GET["uuid"])) {
+            
+            $engine = new ClientEngine(false);
             $client = $engine->get_client(trim($_GET["uuid"]));
 
             if (empty($client)) {
@@ -15,6 +16,7 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                 ], 404);
             }
 
+            unset($client["secret_key"]);
             $engine->echo_response([
                 "status" => true,
                 "message" => "Client information available.",
@@ -22,6 +24,7 @@ switch ($_SERVER["REQUEST_METHOD"]) {
             ], 200);
         }
 
+        $engine = new ClientEngine(true);
         $engine->echo_response([
             "status" => true,
             "message" => "The clients you administrate are listed here.",
@@ -29,6 +32,7 @@ switch ($_SERVER["REQUEST_METHOD"]) {
         ], 200);
         break;
     case "POST":
+        $engine = new ClientEngine(true);
         if (empty($_POST["name"]) || empty($_POST["author_name"]) || empty($_POST["logo_url"]) || empty($_POST["webpage"]) || empty($_POST["description"]) || empty($_POST["callback_url"])) {
             $engine->echo_response([
                 "status" => false,
@@ -52,6 +56,7 @@ switch ($_SERVER["REQUEST_METHOD"]) {
         ], 201);
         break;
     case "PATCH":
+        $engine = new ClientEngine(true);
         if (empty($_PATCH)) {
             $_PATCH = [];
             $engine->parse_raw_http_request($_PATCH);
@@ -74,6 +79,7 @@ switch ($_SERVER["REQUEST_METHOD"]) {
         ], 200);
         break;
     case "DELETE":
+        $engine = new ClientEngine(true);
         if (empty($_GET["uuid"])) {
             $engine->echo_response([
                 "status" => false,
