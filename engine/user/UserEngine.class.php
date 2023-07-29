@@ -52,6 +52,15 @@ class UserEngine extends GlobalEngine
         }
     }
 
+    function update_password($current, $new_raw) {
+        $user = $this->pdo->select_user($this->current_session()["user"]["primary_email"]);
+        if(!password_verify($current, $user["password_hash"])) return false;
+
+        $this->pdo->update_user_field($this->current_session()["user"]["uuid"], "password_hash", password_hash($new_raw, PASSWORD_BCRYPT));
+
+        return true;
+    }
+
     function schedule_user_deletion()
     {
         $user_uuid = $this->current_session()["user"]["uuid"];
