@@ -230,7 +230,7 @@ class GlobalEngine
      */
     public function device_name()
     {
-        $browser = get_browser($_SERVER['HTTP_USER_AGENT'], true);
+        $browser = @get_browser($_SERVER['HTTP_USER_AGENT'], true);
 
         if ($browser === false) return "Unknown device";
         else return $browser["browser"] . " for " . $browser["platform"];
