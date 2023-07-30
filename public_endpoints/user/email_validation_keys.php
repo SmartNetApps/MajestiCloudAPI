@@ -12,7 +12,7 @@ if ($_SERVER["REQUEST_METHOD"] != "GET") {
 // Require the API key
 if(!isset($_GET['api_key']) || !$engine->check_api_key($_GET['api_key'])) {
     $engine->echo_response([
-        "status" => true,
+        "status" => false,
         "message" => "Incorrect API Key."
     ], 403);
 }
