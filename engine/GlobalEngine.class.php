@@ -52,9 +52,11 @@ class GlobalEngine
             $this->current_session["client"] = $this->pdo->select_client_from_token($bearer_token);
             $this->current_session["permissions"] = $this->pdo->select_permissions_of_session($bearer_token);
 
-            // Remove secrets from the current_session variable
+            // Remove or replace secrets from the current_session variable
             unset($this->current_session["token"]);
             unset($this->current_session["user"]["password_hash"]);
+            $this->current_session["user"]["primary_email_is_validated"] = empty($this->current_session["user"]["primary_email_validation_key"]);
+            $this->current_session["user"]["recovery_email_is_validated"] = empty($this->current_session["user"]["recovery_email_validation_key"]);
             unset($this->current_session["user"]["primary_email_validation_key"]);
             unset($this->current_session["user"]["recovery_email_validation_key"]);
             unset($this->current_session["client"]["secret_key"]);
