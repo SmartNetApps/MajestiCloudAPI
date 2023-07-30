@@ -10,7 +10,12 @@ if ($_SERVER["REQUEST_METHOD"] != "GET") {
 }
 
 // Require the API key
-$engine->check_api_key($_GET['api_key']);
+if(!isset($_GET['api_key']) || !$engine->check_api_key($_GET['api_key'])) {
+    $engine->echo_response([
+        "status" => true,
+        "message" => "Incorrect API Key."
+    ], 403);
+}
 
 $user = $engine->select_email_validation_keys();
 
