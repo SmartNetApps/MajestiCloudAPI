@@ -84,6 +84,14 @@ class UserEngine extends GlobalEngine
         $this->pdo->update_user_field($user_uuid, "profile_picture_path", $new_path);
     }
 
+    function select_email_validation_keys() {
+        $user = $this->pdo->select_user($this->current_session()["user"]["primary_email"]);
+        return [
+            "primary_email_validation_key" => $user["primary_email_validation_key"],
+            "recovery_email_validation_key" => $user["recovery_email_validation_key"]
+        ];
+    }
+
     function check_email_validation_key($email, $key) {
         $user_uuid = $this->current_session()["user"]["uuid"];
         $select = $this->pdo->select_email_validation_data($user_uuid, $email, $key);
