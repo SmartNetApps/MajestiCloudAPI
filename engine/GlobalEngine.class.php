@@ -1,6 +1,7 @@
 <?php
 require_once(__DIR__ . "/Environment.class.php");
 require_once(__DIR__ . "/GlobalPDO.class.php");
+require_once(__DIR__ . "/mailer/Mailer.class.php");
 require_once(__DIR__ . "/user/UserPDO.class.php");
 
 /**
@@ -20,6 +21,9 @@ class GlobalEngine
     /** Current session data, if applicable */
     private array $current_session;
 
+    /** System mailer */
+    protected Mailer $mailer;
+
     /**
      * Global Engine constructor.
      * Fetches the environment variables, checks the validity of the Bearer token if given by the client, 
@@ -37,6 +41,9 @@ class GlobalEngine
 
         set_exception_handler(array($this, 'handle_exception'));
         set_error_handler(array($this, 'handle_error'));
+
+        // Mailer inizialization
+        $this->mailer = new Mailer($this->environment->item("MAILER_FROM"), $this->environment->item("ROOT_URL"));
 
         // PDO initialization
         $this->pdo = new GlobalPDO($this->environment);
