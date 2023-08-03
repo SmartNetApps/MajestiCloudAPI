@@ -1,4 +1,6 @@
 # Environment variables
+.prod.env
+.dev.env
 .env
 
 # VS Code related
