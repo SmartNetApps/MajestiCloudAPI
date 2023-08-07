@@ -239,7 +239,11 @@ class GlobalEngine
      */
     public function device_name()
     {
-        $browser = @get_browser($_SERVER['HTTP_USER_AGENT'], true);
+        try {
+            $browser = @get_browser($_SERVER['HTTP_USER_AGENT'], true);
+        } catch (Exception $ex) {
+            $browser = false;
+        }
 
         if ($browser === false) return "Unknown device";
         else return $browser["browser"] . " for " . $browser["platform"];
@@ -286,7 +290,7 @@ class GlobalEngine
             "message" => "Internal failure."
         ];
 
-        if($this->environment->item("ENVIRONMENT_TYPE") == "development") {
+        if ($this->environment->item("ENVIRONMENT_TYPE") == "development") {
             $response["message"] = $ex->__toString();
             $response["exception"] = [
                 "message" => $ex->getMessage(),
@@ -300,7 +304,8 @@ class GlobalEngine
         $this->echo_response($response, 500);
     }
 
-    public function handle_error($errno, $errstr, $errfile, $errline) {
+    public function handle_error($errno, $errstr, $errfile, $errline)
+    {
         throw new ErrorException($errstr, $errno, 0, $errfile, $errline);
     }
 }
