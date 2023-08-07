@@ -17,7 +17,7 @@ It is framework-less, meaning it has the least dependencies possible.
 3. Configure your reverse proxy or VirtualHost for it to serve the API from /public_endpoints.
 4. Ensure your web server has the right to write in /user_content and /engine/failure_logs.
 5. Configure your environment variables by editing /engine/Environment.class.php, or add them in /.env
-6. Create the database (I will add an SQL script shortly).
+6. Create the database (Use majesticloud.sql).
 
 ## Using a different DBMS
 If you choose to use a DBMS that is not MySQL, you **must** edit the PDO connection string in /engine/GlobalPDO.class.php.
