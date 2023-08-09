@@ -29,6 +29,13 @@ switch ($_SERVER["REQUEST_METHOD"]) {
             ], 403);
         }
 
+        if($engine->does_user_exist($_POST["email"])) {
+            $engine->echo_response([
+                "status" => false,
+                "message" => "A user with this primary email is already registered."
+            ], 400);
+        }
+
         $uuid = $engine->create_user($_POST["email"], $_POST["password"], htmlspecialchars($_POST["name"]));
 
         $engine->echo_response([

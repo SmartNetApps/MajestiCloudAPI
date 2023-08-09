@@ -25,6 +25,11 @@ class UserEngine extends GlobalEngine
         return $uuid;
     }
 
+    function does_user_exist($email) {
+        $user = $this->pdo->select_user($email);
+        return $user !== false && !empty($user);
+    }
+
     /**
      * @deprecated
      */
