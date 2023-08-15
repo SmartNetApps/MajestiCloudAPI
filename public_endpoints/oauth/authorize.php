@@ -1,9 +1,10 @@
 <?php
+session_start();
+if(!isset($_SESSION["alert"])) $_SESSION["alert"] = "";
 
 require_once(__DIR__ . "/../../engine/oauth/OAuthEngine.class.php");
 $engine = new OAuthEngine();
 $error = "";
-$alert = "";
 
 try {
     // Check for mendatory values
@@ -27,12 +28,12 @@ try {
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Check if all mendatory parameters are supplied
         if (empty($_POST["username"]) || empty($_POST["password"])) {
-            $alert = "Invalid credentials.";
+            $_SESSION["alert"] = "Invalid credentials.";
         } else {
             // Check if the username+password combination is valid
             $valid = $engine->check_credentials(trim($_POST["username"]), trim($_POST["password"]));
             if (!$valid) {
-                $alert = "Invalid credentials.";
+                $_SESSION["alert"] = "Invalid credentials.";
             } else {
                 // Get the PKCE Code Verifier, if there is one
                 $code_verifier = null;
@@ -62,13 +63,14 @@ try {
                     $error .= " Internal failure while trying to create an authorization code.";
                 } else {
                     http_response_code(307);
-                    header("Location: ".$client["callback_url"] . "?code=$code");
+                    header("Location: " . $client["callback_url"] . "?code=$code");
                 }
             }
         }
     }
 } catch (Exception $ex) {
     // This is to prevent JSON-printing of errors
+    $error = "Internal failure.";
 }
 ?>
 
@@ -117,7 +119,7 @@ try {
             <h2>Unable to continue</h2>
             <p>Your client is probably misconfigured. Please check the request validity and try again.</p>
             <pre><?= trim($error) ?></pre>
-        <?php elseif ($_SERVER["REQUEST_METHOD"] == "POST" && empty($alert)) : ?>
+        <?php elseif ($_SERVER["REQUEST_METHOD"] == "POST" && empty($_SESSION["alert"])) : ?>
             <p>Please wait...</p>
         <?php else : ?>
             <h2>Log into MajestiCloud</h2>
@@ -132,10 +134,11 @@ try {
                     <p class="m-0"><a href="<?= $client["webpage"] ?>"><?= $client["webpage"] ?></a></p>
                 </div>
             </div>
-            <?php if (!empty($alert)) : ?>
+            <?php if (!empty($_SESSION["alert"])) : ?>
                 <div class="alert alert-info">
-                    <?= $alert ?>
+                    <?= $_SESSION["alert"] ?>
                 </div>
+                <?php $_SESSION["alert"] = ""; ?>
             <?php endif; ?>
             <form action="authorize.php" method="POST">
                 <input type="hidden" name="client_uuid" value="<?= $_REQUEST['client_uuid'] ?>">
@@ -146,7 +149,7 @@ try {
                 <?php endif; ?>
                 <div class="mb-3">
                     <label for="emailInput" class="form-label">Email address</label>
-                    <input type="email" class="form-control" id="emailInput" placeholder="name@example.com" name="username" value="<?php if (isset($_GET["username"])) echo $_GET["username"]; ?>" autocomplete="username" required>
+                    <input type="email" class="form-control" id="emailInput" placeholder="name@example.com" name="username" value="<?php if (isset($_REQUEST["username"])) echo $_REQUEST["username"]; ?>" autocomplete="username" required>
                     <div class="invalid-feedback">Please type your account's primary email address.</div>
                 </div>
                 <div class="mb-3">
@@ -157,13 +160,26 @@ try {
                 <div>
                     <button type="submit" id="submitBtn" class="btn btn-primary shadow-sm">Continue <i class="bi bi-chevron-right"></i></button>
                 </div>
-                <div class="border-top mt-3 pt-3">
-                    <p class="fs-5 mb-1">No account on MajestiCloud yet?</p>
-                    <a class="btn btn-secondary shadow-sm" href="newaccount.php">Create an account <i class="bi bi-chevron-right"></i></a>
-                </div>
             </form>
+            <div class="border-top mt-3 pt-3">
+                <p class="fs-5 mb-1">No account on MajestiCloud yet?</p>
+                <form action="newaccount.php" method="GET">
+                    <input type="hidden" name="client_uuid" value="<?= $_REQUEST['client_uuid'] ?>">
+                    <input type="hidden" name="redirect_uri" value="<?= $_REQUEST['redirect_uri'] ?>">
+                    <?php if (!empty($_REQUEST["code_challenge"]) && !empty($_REQUEST["code_challenge_method"])) : ?>
+                        <input type="hidden" name="code_challenge" value="<?= $_REQUEST['code_challenge'] ?>">
+                        <input type="hidden" name="code_challenge_method" value="<?= $_REQUEST['code_challenge_method'] ?>">
+                    <?php endif; ?>
+                    <div>
+                        <button type="submit" id="submitBtn" class="btn btn-secondary shadow-sm">Create an account <i class="bi bi-chevron-right"></i></button>
+                    </div>
+                </form>
+            </div>
         <?php endif; ?>
     </div>
+    <footer class="m-5">
+        &copy; 2014-<?= date("Y") ?> Quentin Pugeat
+    </footer>
     <script>
         function showform() {
             document.getElementsByTagName("form").item(0).style.display = "block";
