@@ -33,7 +33,7 @@ class SessionEngine extends GlobalEngine
      * @return bool
      */
     public function logout() {
-        return $this->pdo->delete_session($this->current_session()["session"]["uuid"]);
+        return $this->pdo->delete_session($this->current_session()["uuid"]);
     }
 
     /**
