@@ -1,6 +1,7 @@
 <?php
 require_once(__DIR__ . "/../GlobalEngine.class.php");
 require_once(__DIR__ . "/UserPDO.class.php");
+require_once(__DIR__ . "/../mailer/Mailer.class.php");
 
 class UserEngine extends GlobalEngine
 {
@@ -25,7 +26,8 @@ class UserEngine extends GlobalEngine
         return $uuid;
     }
 
-    function does_user_exist($email) {
+    function does_user_exist($email)
+    {
         $user = $this->pdo->select_user($email);
         return $user !== false && !empty($user);
     }
@@ -48,18 +50,24 @@ class UserEngine extends GlobalEngine
 
             $this->pdo->update_user_field($user_uuid, $key, $value);
 
+            // Specific treatment of email updates
+            $new_key = bin2hex(random_bytes(64));
+            $mailer = new Mailer();
+
             if ($key == "primary_email") {
-                $this->pdo->update_user_field($user_uuid, "primary_email_validation_key", bin2hex(random_bytes(64)));
-            }
-            if ($key == "recovery_email") {
-                $this->pdo->update_user_field($user_uuid, "recovery_email_validation_key",  !empty($value) ? bin2hex(random_bytes(64)) : null);
+                $this->pdo->update_user_field($user_uuid, "primary_email_validation_key", $new_key);
+                $mailer->validation_email($value, $new_key);
+            } elseif ($key == "recovery_email") {
+                $this->pdo->update_user_field($user_uuid, "recovery_email_validation_key",  !empty($value) ? $new_key : null);
+                if (!empty($value)) $mailer->validation_email($value, $new_key);
             }
         }
     }
 
-    function update_password($current, $new_raw) {
+    function update_password($current, $new_raw)
+    {
         $user = $this->pdo->select_user($this->current_session()["user"]["primary_email"]);
-        if(!password_verify($current, $user["password_hash"])) return false;
+        if (!password_verify($current, $user["password_hash"])) return false;
 
         $this->pdo->update_user_field($this->current_session()["user"]["uuid"], "password_hash", password_hash($new_raw, PASSWORD_BCRYPT));
 
@@ -89,7 +97,8 @@ class UserEngine extends GlobalEngine
         $this->pdo->update_user_field($user_uuid, "profile_picture_path", $new_path);
     }
 
-    function select_email_validation_keys() {
+    function select_email_validation_keys()
+    {
         $user = $this->pdo->select_user($this->current_session()["user"]["primary_email"]);
         return [
             "primary_email_validation_key" => $user["primary_email_validation_key"],
@@ -97,7 +106,8 @@ class UserEngine extends GlobalEngine
         ];
     }
 
-    function validate_email($email, $key) {
+    function validate_email($email, $key)
+    {
         return $this->pdo->validate_email($email, $key);
     }
 }
