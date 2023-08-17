@@ -3,27 +3,16 @@ session_start();
 if (!isset($_SESSION["alert"])) $_SESSION["alert"] = "";
 
 require_once(__DIR__ . "/../../engine/user/UserEngine.class.php");
-$engine = new UserEngine(true);
+$engine = new UserEngine(false);
 $error = "";
 
 try {
-    // Check for mendatory values
     if ($_SERVER["REQUEST_METHOD"] != "GET") {
-        $error = " This endpoint requires GET.";
+        $error = "This endpoint requires GET.";
     } elseif (empty($_GET["email"]) || empty($_GET["key"])) {
-        $error = " Missing parameters in the request.";
-    } else {
-        $user = $engine->current_session()["user"];
-
-        if (!in_array($_GET["email"], [$user["primary_email"], $user["recovery_email"]])) {
-            $error = "This email address is not associated with the logged profile.";
-        } elseif (!$engine->check_email_validation_key($_GET["email"], $_GET["key"])) {
-            $error = "Wrong or expired validation key.";
-        } else {
-            if ($_GET["email"] == $user["primary_email"]) $engine->validate_email("primary");
-            elseif ($_GET["email"] == $user["recovery_email"]) $engine->validate_email("recovery");
-            else $error = "Could not update your profile, please try again with another validation email.";
-        }
+        $error = "Missing parameters in the request.";
+    } elseif (!$engine->validate_email($_GET["email"], $_GET["key"])) {
+        $error = "This validation key is expired or invalid.";
     }
 } catch (Exception $ex) {
     // This is to prevent JSON-printing of errors

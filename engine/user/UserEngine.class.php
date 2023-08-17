@@ -97,15 +97,7 @@ class UserEngine extends GlobalEngine
         ];
     }
 
-    function check_email_validation_key($email, $key) {
-        $user_uuid = $this->current_session()["user"]["uuid"];
-        $select = $this->pdo->select_email_validation_data($user_uuid, $email, $key);
-
-        return $select !== false;
-    }
-
-    function validate_email($which_one) {
-        $user_uuid = $this->current_session()["user"]["uuid"];
-        $this->pdo->update_user_field($user_uuid, $which_one."_email_validation_key", null);
+    function validate_email($email, $key) {
+        return $this->pdo->validate_email($email, $key);
     }
 }
