@@ -226,7 +226,9 @@ class GlobalEngine
      */
     public function end_user_ip_address()
     {
-        if (!empty($_SERVER['HTTP_CLIENT_IP']))
+        if (!empty($_SERVER['HTTP_X_MAJESTICLOUD_CLIENT']))
+            return $_SERVER['HTTP_X_MAJESTICLOUD_CLIENT'];
+        elseif (!empty($_SERVER['HTTP_CLIENT_IP']))
             return $_SERVER['HTTP_CLIENT_IP'];
         elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
             return $_SERVER['HTTP_X_FORWARDED_FOR'];
