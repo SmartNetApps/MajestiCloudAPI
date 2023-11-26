@@ -70,7 +70,7 @@ try {
     }
 } catch (Exception $ex) {
     // This is to prevent JSON-printing of errors
-    $error = "Internal failure.";
+    $error .= " Internal failure.";
 }
 ?>
 
