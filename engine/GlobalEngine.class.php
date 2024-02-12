@@ -49,7 +49,7 @@ class GlobalEngine
         $this->pdo = new GlobalPDO($this->environment);
 
         if ($require_session && !$this->check_session()) {
-            $this->echo_response(["status" => false, "message" => "You must be logged in to continue."], 403);
+            $this->echo_response(["status" => false, "message" => "You must be logged in to continue."], 401);
         }
 
         if ($this->check_session()) {
