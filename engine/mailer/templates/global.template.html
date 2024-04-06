@@ -6,11 +6,27 @@
     <title>{{subject}}</title>
 </head>
 <body>
-    <img src="{{logo}}" alt="MajestiCloud" height="60"><br>
+    <div style="height: 60px;">
+        <img src="{{logo}}" alt="MajestiCloud" width="60" height="60">
+    </div>
     <h1>{{title}}</h1>
 
     {{html_body}}
 
-    <p>Les Majesticiels</p>
+    <table style="margin-top: 2rem;">
+        <tr>
+            <td style="padding-right: 8px; border-right: thin solid blue;">
+                MajestiCloud
+            </td>
+            <td style="padding-left: 8px;">
+                <img src="https://www.lesmajesticiels.org/assets/logos/lesmajesticiels.png" alt="Les Majesticiels" height="40">
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                This is an automatic email sent by the MajestiCloud instance you have an account on.
+            </td>
+        </tr>
+    </table>
 </body>
 </html>
