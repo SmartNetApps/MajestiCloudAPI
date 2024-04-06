@@ -3,6 +3,8 @@ require_once(__DIR__ . "/../GlobalEngine.class.php");
 require_once(__DIR__ . "/UserPDO.class.php");
 require_once(__DIR__ . "/../mailer/Mailer.class.php");
 
+use OTPHP\TOTP;
+
 class UserEngine extends GlobalEngine
 {
     protected $pdo;
@@ -109,5 +111,30 @@ class UserEngine extends GlobalEngine
     function validate_email($email, $key)
     {
         return $this->pdo->validate_email($email, $key);
+    }
+
+    function enable_totp()
+    {
+        $user_uuid = $this->current_session()["user"]["uuid"];
+
+        // Generate secret
+        $otp = TOTP::generate();
+        $otp->setLabel('MajestiCloud');
+        $totp_secret = $otp->getSecret();
+
+        // Save it
+        $this->pdo->update_user_field($user_uuid, "totp_secret", $totp_secret);
+
+        // Return new settings
+        return [
+            "secret" => $totp_secret,
+            "provisioning_uri" => $otp->getProvisioningUri()
+        ];
+    }
+
+    function disable_totp()
+    {
+        $user_uuid = $this->current_session()["user"]["uuid"];
+        return $this->pdo->update_user_field($user_uuid, "totp_secret", null);
     }
 }

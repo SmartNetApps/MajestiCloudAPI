@@ -5,6 +5,8 @@ require_once(__DIR__ . "/../client/ClientPDO.class.php");
 require_once(__DIR__ . "/../user/UserPDO.class.php");
 require_once(__DIR__ . "/../session/SessionPDO.class.php");
 
+use OTPHP\TOTP;
+
 class OAuthEngine extends GlobalEngine
 {
     protected $pdo;
@@ -45,9 +47,9 @@ class OAuthEngine extends GlobalEngine
     /**
      * Get user data
      */
-    public function select_user($username)
+    public function select_user($value, $col = "primary_email")
     {
-        return $this->user_pdo->select_user($username);
+        return $this->user_pdo->select_user($value, $col);
     }
 
     /**
@@ -71,8 +73,11 @@ class OAuthEngine extends GlobalEngine
      */
     public function create_authorization_code(string $user_uuid, string $client_uuid, $code_verifier = null)
     {
+        $user = $this->select_user($user_uuid, "uuid");
+        $require_mfa = !empty($user["totp_secret"]);
+
         $random_code = bin2hex(random_bytes(64));
-        $insert = $this->pdo->insert_authorization($random_code, $user_uuid, $client_uuid, $code_verifier);
+        $insert = $this->pdo->insert_authorization($random_code, $user_uuid, $client_uuid, $code_verifier, $require_mfa);
         if (!$insert) throw new Exception("Failed to create the authorization code.");
         return $random_code;
     }
@@ -122,5 +127,21 @@ class OAuthEngine extends GlobalEngine
         }
 
         return $random_token;
+    }
+
+    function check_totp($authorization_code, $client_uuid, $totp_input)
+    {
+        // $secret = $this->current_session["user"]["totp_secret"];
+        $authorization = $this->get_authorization($authorization_code, $client_uuid);
+        $user = $this->user_pdo->select_user($authorization["user_uuid"], "uuid");
+
+        $otp = TOTP::createFromSecret($user["totp_secret"]);
+        $verify = $otp->verify($totp_input);
+
+        if ($verify) {
+            $this->pdo->set_authorization_mfa_requirement($authorization_code, false);
+        }
+
+        return $verify;
     }
 }

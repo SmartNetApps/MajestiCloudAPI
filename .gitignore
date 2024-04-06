@@ -9,3 +9,6 @@
 # System folders
 user_content/*/*
 engine/failure_logs/*.log
+
+# Composer dependencies
+/vendor

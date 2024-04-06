@@ -28,6 +28,14 @@ if($authorization === false) {
     ], 401);
 }
 
+// Check if MFA is required
+if($authorization["require_mfa"] == 1) {
+    $engine->echo_response([
+        "status" => false,
+        "message" => "The user must go through the Multi-Factor Authentication step before you can use this code."
+    ], 401);
+}
+
 if(!empty($authorization["pkce_code_verifier"])) {
     if(empty($_POST["code_verifier"])) {
         $engine->echo_response([
@@ -42,8 +50,7 @@ if(!empty($authorization["pkce_code_verifier"])) {
             "message" => "The supplied PKCE Code Verifier does not match the one used for the authorization."
         ], 401);
     }
-}
-else {
+} else {
     if(empty($_POST["client_secret"])) {
         $engine->echo_response([
             "status" => false,

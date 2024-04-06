@@ -3,6 +3,7 @@ require_once(__DIR__ . "/Environment.class.php");
 require_once(__DIR__ . "/GlobalPDO.class.php");
 require_once(__DIR__ . "/mailer/Mailer.class.php");
 require_once(__DIR__ . "/user/UserPDO.class.php");
+require_once(__DIR__ . "/../vendor/autoload.php");
 
 /**
  * MajestiCloud's global engine, enables the API to function
@@ -19,7 +20,7 @@ class GlobalEngine
     private $pdo;
 
     /** Current session data, if applicable */
-    private array $current_session;
+    protected array $current_session;
 
     /** System mailer */
     protected Mailer $mailer;
@@ -59,15 +60,6 @@ class GlobalEngine
             $this->current_session["client"] = $this->pdo->select_client_from_token($bearer_token);
             $this->current_session["permissions"] = $this->pdo->select_permissions_of_session($bearer_token);
 
-            // Remove or replace secrets from the current_session variable
-            unset($this->current_session["token"]);
-            unset($this->current_session["user"]["password_hash"]);
-            $this->current_session["user"]["primary_email_is_validated"] = empty($this->current_session["user"]["primary_email_validation_key"]);
-            $this->current_session["user"]["recovery_email_is_validated"] = empty($this->current_session["user"]["recovery_email_validation_key"]);
-            unset($this->current_session["user"]["primary_email_validation_key"]);
-            unset($this->current_session["user"]["recovery_email_validation_key"]);
-            unset($this->current_session["client"]["secret_key"]);
-
             // Check if the client is allowed to read/write on the requested endpoint
             if (isset($scope)) {
                 if (!$this->check_permission($scope, ($_SERVER["REQUEST_METHOD"] == "GET" ? "read" : "write"))) {
@@ -97,7 +89,20 @@ class GlobalEngine
     public function current_session()
     {
         if (!$this->check_session()) return null;
-        return $this->current_session;
+        $safe_current_session = $this->current_session;
+
+        // Remove or replace secrets from the safe_current_session variable
+        unset($safe_current_session["token"]);
+        unset($safe_current_session["user"]["password_hash"]);
+        $safe_current_session["user"]["primary_email_is_validated"] = empty($safe_current_session["user"]["primary_email_validation_key"]);
+        $safe_current_session["user"]["recovery_email_is_validated"] = empty($safe_current_session["user"]["recovery_email_validation_key"]);
+        unset($safe_current_session["user"]["primary_email_validation_key"]);
+        unset($safe_current_session["user"]["recovery_email_validation_key"]);
+        $safe_current_session["user"]["totp_is_enabled"] = !empty($safe_current_session["user"]["totp_secret"]);
+        unset($safe_current_session["user"]["totp_secret"]);
+        unset($safe_current_session["client"]["secret_key"]);
+
+        return $safe_current_session;
     }
 
     /**

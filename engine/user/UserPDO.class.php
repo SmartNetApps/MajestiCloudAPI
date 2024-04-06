@@ -8,10 +8,12 @@ class UserPDO extends GlobalPDO
         parent::__construct($env);
     }
 
-    public function select_user(string $username)
+    public function select_user(string $value, string $col = "primary_email")
     {
-        $stmt = $this->pdo->prepare("SELECT * FROM user WHERE primary_email = :username");
-        $stmt->bindValue("username", $username);
+        if (!in_array($col, ["primary_email", "uuid"])) return null;
+
+        $stmt = $this->pdo->prepare("SELECT * FROM user WHERE $col = :value");
+        $stmt->bindValue("value", $value);
         $stmt->execute();
 
         return $stmt->fetch(PDO::FETCH_ASSOC);

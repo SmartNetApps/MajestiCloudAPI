@@ -60,8 +60,13 @@ try {
                 // Create an authorization code for the authenticated user and client 
                 $user = $engine->select_user($_POST["username"]);
                 $code = $engine->create_authorization_code($user["uuid"], $_POST["client_uuid"], $code_verifier);
+                $mfa_required = !empty($user["totp_secret"]);
+                
                 if ($code === false) {
                     $error .= " Internal failure while trying to create an authorization code.";
+                } else if ($mfa_required) {
+                    http_response_code(307);
+                    header("Location: /oauth/mfa_intersistial.php?client_uuid=" . $client["uuid"] . "&code=$code");
                 } else {
                     http_response_code(307);
                     header("Location: " . $client["callback_url"] . "?code=$code");
@@ -76,7 +81,7 @@ try {
 ?>
 
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
