@@ -97,7 +97,7 @@ try {
 
                 <div class="mb-3">
                     <label for="totpInput" class="form-label">Code</label>
-                    <input type="text" class="form-control" id="totpInput" name="totp" inputmode="numeric" autocomplete="off" minlength="6" required>
+                    <input type="text" class="form-control" id="totpInput" name="totp" inputmode="numeric" autocomplete="one-time-code" minlength="6" required>
                     <div class="invalid-feedback">Please type the six-digits code given by your OTP app.</div>
                 </div>
                 <div>
