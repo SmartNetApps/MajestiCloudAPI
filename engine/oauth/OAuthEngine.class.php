@@ -57,6 +57,14 @@ class OAuthEngine extends GlobalEngine
     }
 
     /**
+     * Get client permissions
+     */
+    public function get_client_permissions(string $client_uuid)
+    {
+        return $this->client_pdo->select_client_permissions($client_uuid);
+    }
+
+    /**
      * Generate and insert a new authorization code for a given client and authenticated user
      */
     public function create_authorization_code(string $user_uuid, string $client_uuid, $code_verifier = null)

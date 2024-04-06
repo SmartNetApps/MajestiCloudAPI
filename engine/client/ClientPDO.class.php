@@ -45,6 +45,18 @@ class ClientPDO extends GlobalPDO
         return $stmt->fetch(PDO::FETCH_ASSOC)["count"] != 0 ? true : false;
     }
 
+    public function select_client_permissions(string $client_uuid)
+    {
+        $stmt = $this->pdo->prepare("SELECT `permission`.`user_friendly_description`, `can_read`, `can_write` 
+        FROM `client_has_permission`
+        INNER JOIN `permission` ON `permission`.`id` = `client_has_permission`.`permission_id`
+        WHERE `client_uuid` = :client_uuid");
+        $stmt->bindValue("client_uuid", $client_uuid);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function insert_client(string $name, string $logo_url, string $author_name, string $webpage, string $description, string $callback_url, string $secret_key)
     {
         $stmt = $this->pdo->prepare(

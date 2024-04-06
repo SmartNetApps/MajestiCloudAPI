@@ -1,6 +1,6 @@
 <?php
 session_start();
-if(!isset($_SESSION["alert"])) $_SESSION["alert"] = "";
+if (!isset($_SESSION["alert"])) $_SESSION["alert"] = "";
 
 require_once(__DIR__ . "/../../engine/oauth/OAuthEngine.class.php");
 $engine = new OAuthEngine();
@@ -20,6 +20,7 @@ try {
 
     // Check if the supplied redirect_uri is correct
     $client = $engine->select_client($_REQUEST["client_uuid"]);
+    $permissions = $engine->get_client_permissions($_REQUEST["client_uuid"]);
     if ($client["callback_url"] !== $_REQUEST["redirect_uri"]) {
         $error .= " Invalid redirect URI.";
     }
@@ -123,7 +124,7 @@ try {
             <p>Please wait...</p>
         <?php else : ?>
             <h2>Log into MajestiCloud</h2>
-            <div class="pb-3 mb-3 border-bottom d-flex flex-row gap-4">
+            <div class="mb-3 d-flex flex-sm-row flex-column gap-4">
                 <div>
                     <img width="50" src="<?= $client["logo_url"] ?>" alt="Logo de l'application">
                 </div>
@@ -134,6 +135,39 @@ try {
                     <p class="m-0"><a href="<?= $client["webpage"] ?>"><?= $client["webpage"] ?></a></p>
                 </div>
             </div>
+            <div class="accordion mb-3" id="permissionsAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                            What this app can do on your behalf
+                        </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#permissionsAccordion">
+                        <div class="accordion-body table-responsive">
+                            <table class="table">
+                                <tbody>
+                                    <?php foreach ($permissions as $permission) : ?>
+                                        <tr>
+                                            <td><?= htmlspecialchars($permission["user_friendly_description"]) ?></td>
+                                            <td>
+                                                <?php if ($permission["can_read"] == 1) : ?>
+                                                    <i title="Can read" class="bi bi-eye"></i>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <?php if ($permission["can_write"] == 1) : ?>
+                                                    <i title="Can write" class="bi bi-pencil"></i>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr>
             <?php if (!empty($_SESSION["alert"])) : ?>
                 <div class="alert alert-info">
                     <?= $_SESSION["alert"] ?>
