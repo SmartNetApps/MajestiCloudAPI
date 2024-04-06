@@ -7,10 +7,21 @@
 class Mailer
 {
     private string $from = "webmaster@localhost";
+    private string $url = "";
 
-    function __construct()
+    function __construct($from = null, $url = null)
     {
-        $this->from = "mailer@" . $_SERVER['HTTP_HOST'];
+        if (empty($from)) {
+            $this->from = "mailer@" . $_SERVER['HTTP_HOST'];
+        } else {
+            $this->from = $from;
+        }
+
+        if (empty($url)) {
+            $this->url = ($_SERVER['SERVER_PORT'] == 443 ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'];
+        } else {
+            $this->url = $url;
+        }
     }
 
     private function base64_logo()
@@ -43,8 +54,8 @@ class Mailer
 
     public function validation_email($to, $validation_key)
     {
-        if(empty($to) || empty($validation_key)) return;
-        $url = ($_SERVER['SERVER_PORT'] == 443 ? 'https://' : 'http://').$_SERVER['HTTP_HOST'] . "/user/verify_email.php?email=" . urlencode($to) . "&key=" . urlencode($validation_key);
+        if (empty($to) || empty($validation_key)) return;
+        $url = $this->url . "/user/verify_email.php?email=" . urlencode($to) . "&key=" . urlencode($validation_key);
         $this->send_mail(
             $to,
             "Please validate your email address",
