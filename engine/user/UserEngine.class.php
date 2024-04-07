@@ -119,7 +119,8 @@ class UserEngine extends GlobalEngine
 
         // Generate secret
         $otp = TOTP::generate();
-        $otp->setLabel('MajestiCloud');
+        $otp->setIssuer("MajestiCloud");
+        $otp->setLabel($this->current_session()["user"]["primary_email"]);
         $totp_secret = $otp->getSecret();
 
         // Save it
