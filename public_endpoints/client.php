@@ -5,7 +5,7 @@ require_once(__DIR__ . "/../engine/client/ClientEngine.class.php");
 switch ($_SERVER["REQUEST_METHOD"]) {
     case "GET":
         if (!empty($_GET["uuid"])) {
-            
+
             $engine = new ClientEngine(false);
             $client = $engine->get_client(trim($_GET["uuid"]));
 
@@ -16,7 +16,10 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                 ], 404);
             }
 
-            unset($client["secret_key"]);
+            if (!$engine->is_admin($engine->current_session()["user"]["uuid"], $client["uuid"])) {
+                unset($client["secret_key"]);
+            }
+
             $engine->echo_response([
                 "status" => true,
                 "message" => "Client information available.",

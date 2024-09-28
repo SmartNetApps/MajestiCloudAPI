@@ -22,7 +22,7 @@ class ClientEngine extends GlobalEngine
      * Checks if a user is an admin of a client
      * @return bool
      */
-    private function is_admin(string $user_uuid, string $client_uuid) {
+    public function is_admin(string $user_uuid, string $client_uuid) {
         return $this->pdo->client_has_admin_check($user_uuid, $client_uuid);
     }
 
