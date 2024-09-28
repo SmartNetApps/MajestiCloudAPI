@@ -42,7 +42,7 @@ class ClientEngine extends GlobalEngine
         return ["uuid" => $this->pdo->insert_client($name, $logo_url, $author_name, $webpage, $description, $callback_url, $secret_key), "secret_key" => $secret_key];
     }
 
-    function update_client(int $client_uuid, array $new_data)
+    function update_client(string $client_uuid, array $new_data)
     {
         if(!$this->is_admin($this->current_session()["user"]["uuid"], $client_uuid)) {
             throw New Exception("The logged user does not has administration privileges on this client.");
