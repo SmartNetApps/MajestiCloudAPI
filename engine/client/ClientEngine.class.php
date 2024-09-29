@@ -18,11 +18,19 @@ class ClientEngine extends GlobalEngine
         $this->pdo = new ClientPDO($this->environment);
     }
 
+    private function _enforce_admin_permission(string $client_uuid)
+    {
+        if (!$this->is_admin($this->current_session()["user"]["uuid"], $client_uuid)) {
+            throw new Exception("The logged user does not has administration privileges on this client.");
+        }
+    }
+
     /**
      * Checks if a user is an admin of a client
      * @return bool
      */
-    public function is_admin(string $user_uuid, string $client_uuid) {
+    public function is_admin(string $user_uuid, string $client_uuid)
+    {
         return $this->pdo->client_has_admin_check($user_uuid, $client_uuid);
     }
 
@@ -36,6 +44,30 @@ class ClientEngine extends GlobalEngine
         return $this->pdo->select_client($client_uuid);
     }
 
+    public function get_client_administrators(string $client_uuid)
+    {
+        $this->_enforce_admin_permission($client_uuid);
+        return $this->pdo->select_administrators_of_client($client_uuid);
+    }
+
+    public function add_user_to_client_administrators(string $client_uuid, string $user_email)
+    {
+        $this->_enforce_admin_permission($client_uuid);
+
+        $userPdo = new UserPDO($this->environment);
+        $user = $userPdo->select_user($user_email);
+        if (empty($user)) $user = $userPdo->select_user($user_email, "recovery_email");
+        if (empty($user)) throw new Exception("User not found.");
+
+        $this->pdo->add_administrator_of_client($client_uuid, $user["uuid"]);
+    }
+
+    public function remove_user_from_client_administrators(string $client_uuid, string $user_uuid) {
+        $this->_enforce_admin_permission($client_uuid);
+
+        $this->pdo->remove_administrator_of_client($client_uuid, $user_uuid);
+    }
+
     public function create_client(string $name, string $logo_url, string $author_name, string $webpage, string $description, string $callback_url)
     {
         $secret_key = bin2hex(random_bytes(32));
@@ -44,9 +76,7 @@ class ClientEngine extends GlobalEngine
 
     function update_client(string $client_uuid, array $new_data)
     {
-        if(!$this->is_admin($this->current_session()["user"]["uuid"], $client_uuid)) {
-            throw New Exception("The logged user does not has administration privileges on this client.");
-        }
+        $this->_enforce_admin_permission($client_uuid);
 
         $authorized_fields = ["name", "logo_url", "author_name", "webpage", "description", "callback_url"];
 
@@ -57,10 +87,9 @@ class ClientEngine extends GlobalEngine
         }
     }
 
-    function delete_client(string $client_uuid) {
-        if(!$this->is_admin($this->current_session()["user"]["uuid"], $client_uuid)) {
-            throw New Exception("The logged user does not has administration privileges on this client.");
-        }
+    function delete_client(string $client_uuid)
+    {
+        $this->_enforce_admin_permission($client_uuid);
 
         $this->pdo->delete_client($client_uuid);
         return true;

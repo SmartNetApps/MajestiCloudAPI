@@ -45,6 +45,31 @@ class ClientPDO extends GlobalPDO
         return $stmt->fetch(PDO::FETCH_ASSOC)["count"] != 0 ? true : false;
     }
 
+    public function select_administrators_of_client(string $client_uuid)
+    {
+        $stmt = $this->pdo->prepare("SELECT user.uuid, user.name, user.profile_picture_path, user.primary_email FROM user INNER JOIN client_has_admin ON user.uuid = client_has_admin.user_uuid WHERE client_has_admin.client_uuid = :client_uuid");
+        $stmt->bindValue("client_uuid", $client_uuid);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function add_administrator_of_client(string $client_uuid, string $user_uuid)
+    {
+        $stmt = $this->pdo->prepare("INSERT INTO client_has_admin(client_uuid, user_uuid) VALUES(:client_uuid, :user_uuid);");
+        $stmt->bindValue("client_uuid", trim($client_uuid));
+        $stmt->bindValue("user_uuid", trim($user_uuid));
+        return $stmt->execute();
+    }
+
+    public function remove_administrator_of_client(string $client_uuid, string $user_uuid)
+    {
+        $stmt = $this->pdo->prepare("DELETE FROM client_has_admin WHERE client_uuid = :client_uuid AND user_uuid = :user_uuid;");
+        $stmt->bindValue("client_uuid", trim($client_uuid));
+        $stmt->bindValue("user_uuid", trim($user_uuid));
+        return $stmt->execute();
+    }
+
     public function select_client_permissions(string $client_uuid)
     {
         $stmt = $this->pdo->prepare("SELECT `permission`.`user_friendly_description`, `can_read`, `can_write` 

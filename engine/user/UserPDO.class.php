@@ -10,7 +10,7 @@ class UserPDO extends GlobalPDO
 
     public function select_user(string $value, string $col = "primary_email")
     {
-        if (!in_array($col, ["primary_email", "uuid"])) return null;
+        if (!in_array($col, ["primary_email", "recovery_email", "uuid"])) return null;
 
         $stmt = $this->pdo->prepare("SELECT * FROM user WHERE $col = :value");
         $stmt->bindValue("value", $value);

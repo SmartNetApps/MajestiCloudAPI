@@ -1,6 +1,6 @@
 <?php
 
-require_once(__DIR__ . "/../engine/client/ClientEngine.class.php");
+require_once(__DIR__ . "/../../engine/client/ClientEngine.class.php");
 
 switch ($_SERVER["REQUEST_METHOD"]) {
     case "GET":
@@ -96,6 +96,7 @@ switch ($_SERVER["REQUEST_METHOD"]) {
             "status" => $deletion,
             "message" => $deletion ? "Successfully deleted the client." : "Internal failure."
         ], $deletion ? 200 : 500);
+        break;
     default:
         $engine = new ClientEngine(false);
         $engine->echo_response([
