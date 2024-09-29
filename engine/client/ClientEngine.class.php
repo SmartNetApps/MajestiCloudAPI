@@ -62,10 +62,16 @@ class ClientEngine extends GlobalEngine
         $this->pdo->add_administrator_of_client($client_uuid, $user["uuid"]);
     }
 
-    public function remove_user_from_client_administrators(string $client_uuid, string $user_uuid) {
+    public function remove_user_from_client_administrators(string $client_uuid, string $user_uuid)
+    {
         $this->_enforce_admin_permission($client_uuid);
 
         $this->pdo->remove_administrator_of_client($client_uuid, $user_uuid);
+    }
+
+    public function get_client_permissions(string $client_uuid)
+    {
+        return $this->pdo->select_client_permissions($client_uuid);
     }
 
     public function create_client(string $name, string $logo_url, string $author_name, string $webpage, string $description, string $callback_url)
