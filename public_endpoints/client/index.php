@@ -90,7 +90,7 @@ switch ($_SERVER["REQUEST_METHOD"]) {
             ], 400);
         }
 
-        $deletion = $client->delete_client($_GET["uuid"]);
+        $deletion = $engine->delete_client($_GET["uuid"]);
 
         $engine->echo_response([
             "status" => $deletion,
