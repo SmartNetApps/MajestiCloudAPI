@@ -82,14 +82,32 @@ class ClientPDO extends GlobalPDO
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function insert_client(string $name, string $logo_url, string $author_name, string $webpage, string $description, string $callback_url, string $secret_key)
+    public function add_client_permission(string $client_uuid, string $permission_scope, bool $can_read, bool $can_write)
     {
         $stmt = $this->pdo->prepare(
-            "INSERT INTO client(uuid, name, logo_url, author_name, webpage, description, callback_url, secret_key)
-            VALUES(UUID(), :name, :logo_url, :author_name, :webpage, :description, :callback_url, :secret_key)"
+            "INSERT INTO client_has_permission(client_uuid, permission_id, can_read, can_write)
+            VALUES(:client_uuid, (SELECT id FROM permission WHERE scope = :permission_scope), :can_read, :can_write)"
         );
+        $stmt->bindValue("client_uuid", $client_uuid);
+        $stmt->bindValue("permission_scope", $permission_scope);
+        $stmt->bindValue("can_read", $can_read ? 1 : 0);
+        $stmt->bindValue("can_write", $can_write ? 1 : 0);
+        $executed = $stmt->execute();
+
+        if (!$executed) throw new Exception($this->pdo->errorCode());
+    }
+
+    public function insert_client(string $name, string $logo_url, string $author_name, string $webpage, string $description, string $callback_url, string $secret_key)
+    {
+        $uuid = uniqid("cl", true);
+
+        $stmt = $this->pdo->prepare(
+            "INSERT INTO client(uuid, name, logo_url, author_name, webpage, description, callback_url, secret_key)
+            VALUES(:uuid, :name, :logo_url, :author_name, :webpage, :description, :callback_url, :secret_key)"
+        );
+        $stmt->bindValue("uuid", $uuid);
         $stmt->bindValue("name", $name);
-        $stmt->bindValue("logo_url,", $logo_url,);
+        $stmt->bindValue("logo_url", $logo_url);
         $stmt->bindValue("author_name", $author_name);
         $stmt->bindValue("webpage", $webpage);
         $stmt->bindValue("description", $description);
@@ -99,7 +117,7 @@ class ClientPDO extends GlobalPDO
         $executed = $stmt->execute();
 
         if (!$executed) throw new Exception($this->pdo->errorCode());
-        return $this->pdo->lastInsertId();
+        return $uuid;
     }
 
     public function update_client_field(string $client_uuid, string $field_name, ?string $new_value)

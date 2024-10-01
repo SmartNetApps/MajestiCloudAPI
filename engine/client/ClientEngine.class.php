@@ -76,8 +76,18 @@ class ClientEngine extends GlobalEngine
 
     public function create_client(string $name, string $logo_url, string $author_name, string $webpage, string $description, string $callback_url)
     {
+        // Generate secret key
         $secret_key = bin2hex(random_bytes(32));
-        return ["uuid" => $this->pdo->insert_client($name, $logo_url, $author_name, $webpage, $description, $callback_url, $secret_key), "secret_key" => $secret_key];
+
+        // Insert client into database
+        $client_uuid = $this->pdo->insert_client($name, $logo_url, $author_name, $webpage, $description, $callback_url, $secret_key);
+
+        // Add default permissions and administrator
+        $this->pdo->add_client_permission($client_uuid, "user", true, false);
+        $this->pdo->add_client_permission($client_uuid, "session", true, true);
+        $this->pdo->add_administrator_of_client($client_uuid, $this->current_session()["user"]["uuid"]);
+
+        return ["uuid" => $client_uuid, "secret_key" => $secret_key];
     }
 
     function update_client(string $client_uuid, array $new_data)
